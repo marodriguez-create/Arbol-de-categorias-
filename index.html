@@ -1253,7 +1253,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
       await db.doc("arbol/meta").set({ version, chunks: n, levels: d.levels, has: d.has, extras: d.extras, filename, updatedAt: next.updatedAt, rows: d.rows.length });
       for (let i = n; i < prevChunks; i++) { try { await db.doc("arbol_partes/p" + i).delete(); } catch (_) {} }
       pending = null; renderImport(); apply(next);
-      showMsg("ok", "Árbol guardado: " + fN(d.rows.length) + " códigos. Quedó guardado en este navegador. Para que otros lo vean, exporta el Excel o actualiza arbol.json en el repositorio.");
+      showMsg("ok", "Árbol guardado: " + fN(d.rows.length) + " códigos. Quedó guardado solo en este navegador. Para que todos lo vean, sube ese Excel a GitHub con el nombre Libro1.xlsx.");
     } catch (e) {
       btn.disabled = false; btn.textContent = "Reintentar guardado";
       const c = e && e.code;
