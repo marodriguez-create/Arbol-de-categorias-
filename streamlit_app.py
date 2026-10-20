@@ -61,14 +61,7 @@ excel = excel_del_repo()
 
 with st.sidebar:
     st.header("Datos")
-    if excel:
-        st.write(f"La página muestra **{excel.name}**, el Excel del repositorio.")
     subido = st.file_uploader("Probar otro Excel (.xlsx)", type=["xlsx"])
-    st.caption(
-        f"Para cambiar los datos para todos, sube tu Excel a GitHub con el nombre "
-        f"**{excel.name if excel else 'Libro1.xlsx'}**, reemplazando el anterior. "
-        "El que pruebes aquí solo lo ves tú mientras esta pestaña esté abierta."
-    )
 
 if subido is not None:
     try:
