@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Árbol de Categorías Ferretería</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: report header → info banner → KPI tiles → brand chips → tabs (Productos · Categorías y árbol · Estructura · Datos a ingresar). Navy + Febeca blue. */
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #f0f3f7;
+  --fg: #0f1b2d;
+  --muted: #5d6878;
+  --line: #dde3ea;
+  --navy: #0e2c5a;
+  --on-navy: #ffffff;
+  --blue: #2a78d6;
+  --blue-soft: #e8f0fb;
+  --blue-line: #c9dbf3;
+  --green: #2f8f4e;
+  --green-soft: #e8f5e6;
+  --orange: #c8791b;
+  --danger: #b3261e;
+  --danger-soft: #fbe7e5;
+  --tier1: #f6c9a8; --tier2: #f39a5f; --tier3: #e8590c;
+  --mod1-bg: #fdc8a8; --mod1-fg: #1b1f24;
+  --mod2-bg: #1f2328; --mod2-fg: #ffffff;
+  --mod3-bg: #cfe0f6; --mod3-fg: #0f1b2d;
+  --mod4-bg: #cfe9d4; --mod4-fg: #0f1b2d;
+  --font-display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131a; --surface: #151c25; --surface-2: #1b2430; --fg: #e7ecf2; --muted: #98a3b2; --line: #2a3442;
+    --navy: #2f62ad; --on-navy: #ffffff; --blue: #6aa6f0; --blue-soft: #172a44; --blue-line: #284a77;
+    --green: #6cc28a; --green-soft: #1b3324; --orange: #e3a052; --danger: #f28b82; --danger-soft: #3d2220; color-scheme: dark;
+    --mod1-bg: #7a4524; --mod1-fg: #fde7d6; --mod2-bg: #e7ecf2; --mod2-fg: #0e131a; --mod3-bg: #284a77; --mod3-fg: #e7ecf2; --mod4-bg: #2a5a38; --mod4-fg: #e7ecf2;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131a; --surface: #151c25; --surface-2: #1b2430; --fg: #e7ecf2; --muted: #98a3b2; --line: #2a3442;
+  --navy: #2f62ad; --on-navy: #ffffff; --blue: #6aa6f0; --blue-soft: #172a44; --blue-line: #284a77;
+  --green: #6cc28a; --green-soft: #1b3324; --orange: #e3a052; --danger: #f28b82; --danger-soft: #3d2220; color-scheme: dark;
+    --mod1-bg: #7a4524; --mod1-fg: #fde7d6; --mod2-bg: #e7ecf2; --mod2-fg: #0e131a; --mod3-bg: #284a77; --mod3-fg: #e7ecf2; --mod4-bg: #2a5a38; --mod4-fg: #e7ecf2;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+.page {
+  max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.eyebrow { font-family: var(--font-body); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.1rem, 5.4vw, 3.4rem); line-height: 1; margin: 0; color: var(--navy); text-wrap: balance; letter-spacing: -0.01em; }
+:root[data-theme="dark"] h1 { color: var(--fg); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) h1 { color: var(--fg); } }
+.lede { color: var(--muted); max-width: 64ch; margin: 10px 0 0; font-size: 1rem; }
+.banner { background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 8px; padding: 12px 16px; font-size: 0.92rem; margin: 0; }
+.banner b { font-weight: 700; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+.kpi b { display: block; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.7rem, 3.4vw, 2.3rem); line-height: 1.05; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kpi small { color: var(--muted); font-size: 0.88rem; }
+.kpi.hero { background: var(--navy); border-color: var(--navy); color: var(--on-navy); }
+.kpi.hero small { color: var(--on-navy); opacity: .85; }
+
+.brands { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.brands .lab { font-weight: 700; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.chip { font: 600 0.92rem var(--font-body); border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: baseline; }
+.chip small { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.chip:hover { border-color: var(--blue); }
+.chip.on { background: var(--navy); border-color: var(--navy); color: var(--on-navy); }
+.chip.on small { color: var(--on-navy); opacity: .8; }
+.note { font-size: 0.85rem; color: var(--muted); margin: -6px 0 0; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { font: 600 1rem var(--font-body); background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); padding: 10px 16px 9px; cursor: pointer; white-space: nowrap; }
+.tab:hover { color: var(--fg); }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--blue); }
+
+button { font: 600 0.9rem var(--font-body); border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 7px 13px; cursor: pointer; min-height: 36px; }
+button:hover { border-color: var(--blue); }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, .chip:focus-visible, .tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+button.primary { background: var(--navy); border-color: var(--navy); color: var(--on-navy); }
+button.danger { color: var(--danger); }
+button.danger.solid { background: var(--danger); border-color: var(--danger); color: #ffffff; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+input[type="search"], select { font: 400 0.95rem var(--font-body); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.mono { font-family: var(--font-mono); font-size: 0.85em; }
+.muted { color: var(--muted); }
+
+/* categorías */
+.cats { display: flex; flex-direction: column; gap: 10px; }
+.cat { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0; }
+.cat > summary, .sub > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: center; }
+.cat > summary { padding: 14px 18px; }
+.cat > summary::-webkit-details-marker, .sub > summary::-webkit-details-marker { display: none; }
+.cname { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.cname .t { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cname .t::before { content: "▸"; font-size: 0.8rem; color: var(--muted); transition: transform .12s; display: inline-block; }
+details[open] > summary .cname .t::before { transform: rotate(90deg); }
+.cat .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.1; }
+.cname .sc { font-size: 0.85rem; color: var(--muted); }
+.bar { height: 4px; border-radius: 2px; background: var(--surface-2); max-width: 290px; width: 100%; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--blue); border-radius: 2px; }
+.metrics { display: flex; gap: 8px 34px; flex-wrap: wrap; justify-content: flex-end; }
+.metric { text-align: right; min-width: 70px; }
+.metric b { display: block; font-weight: 700; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.metric small { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.subs { border-top: 1px solid var(--line); padding: 6px 12px 12px; display: flex; flex-direction: column; }
+.sub { border-bottom: 1px solid var(--line); }
+.sub:last-child { border-bottom: none; }
+.sub > summary { padding: 10px 6px 10px 22px; }
+.sub .nm { font-weight: 600; font-size: 1rem; }
+.sub .metric b { font-weight: 600; font-size: 0.95rem; }
+.sub .bar { max-width: 200px; height: 3px; }
+.sub .bar i { background: var(--navy); opacity: .55; }
+.items { padding: 0 6px 12px 22px; }
+@media (max-width: 760px) {
+  .cat > summary, .sub > summary { grid-template-columns: 1fr; }
+  .metrics { justify-content: flex-start; gap: 8px 22px; }
+  .metric { text-align: left; min-width: 0; }
+}
+
+/* tabla productos */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 700; font-size: 0.7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); white-space: nowrap; position: sticky; top: 0; }
+th button { all: unset; cursor: pointer; }
+th button:focus-visible { outline: 2px solid var(--blue); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.code { font-family: var(--font-mono); font-size: 0.82rem; color: var(--green); white-space: nowrap; }
+td .path { display: block; font-size: 0.8rem; color: var(--muted); }
+tr:last-child td { border-bottom: none; }
+.items table { font-size: 0.86rem; }
+.items .tablewrap { border-radius: 4px; }
+
+/* explorador */
+.explorer { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 10px 14px; font-size: 0.9rem; color: var(--muted); border-bottom: 1px solid var(--line); }
+.crumbs button { border: none; background: none; padding: 2px 4px; min-height: 0; color: var(--blue); }
+.crumbs .here { color: var(--fg); font-weight: 600; }
+.cols { display: flex; overflow-x: auto; min-height: 420px; }
+.col { flex: 0 0 280px; border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; max-height: 64vh; }
+.col-head { font-weight: 700; font-size: 0.7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 10px 14px 8px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.col-list { overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 1px; }
+.item { flex: none; display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: none; background: transparent; border-radius: 5px; padding: 7px 8px; min-height: 0; font-weight: 500; font-size: 0.92rem; }
+.item:hover { background: var(--surface-2); border: none; }
+.item .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.item .code { font-family: var(--font-mono); font-size: 0.74rem; color: var(--green); background: var(--green-soft); padding: 1px 6px; border-radius: 4px; flex: none; }
+.item .n { font-family: var(--font-mono); font-size: 0.74rem; color: var(--muted); flex: none; }
+.item .chev { color: var(--muted); flex: none; }
+.item.sel { background: var(--navy); color: var(--on-navy); }
+.item.sel .n, .item.sel .chev { color: var(--on-navy); }
+.item.sel .code { background: rgba(255,255,255,.2); color: var(--on-navy); }
+.item.trail { background: var(--blue-soft); }
+.detail { flex: 1 0 300px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.detail h3 { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; margin: 0; overflow-wrap: anywhere; }
+.detail .path { font-size: 0.85rem; color: var(--muted); margin: 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.tile { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; min-width: 0; }
+.tile small { display: block; font-size: 0.68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.tile b { font-family: var(--font-display); font-size: 1.35rem; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.tile.code b { font-family: var(--font-mono); font-weight: 500; font-size: 1.05rem; color: var(--green); }
+@media (max-width: 720px) {
+  .cols { min-height: 0; }
+  .col { flex-basis: 100%; border-right: none; max-height: none; }
+  .col:not(.active), .detail:not(.active) { display: none; }
+  .detail { flex-basis: 100%; }
+  .col-list { max-height: 60vh; }
+}
+
+/* datos a ingresar */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; margin: 0; }
+.hint { color: var(--muted); font-size: 0.92rem; margin: 0; max-width: 80ch; }
+.drop { border: 2px dashed var(--line); border-radius: 8px; padding: 22px 16px; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.drop:hover, .drop.over, .drop:focus-visible { border-color: var(--blue); background: var(--blue-soft); outline: none; }
+.drop strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; }
+.drop span { color: var(--muted); font-size: 0.9rem; }
+.roles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.role { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; background: var(--bg); min-width: 0; }
+.role label { font-weight: 600; font-size: 0.88rem; overflow-wrap: anywhere; }
+.check { display: inline-flex; gap: 8px; align-items: center; font-size: 0.9rem; }
+.check input { accent-color: var(--blue); }
+.preview td, .preview th { white-space: nowrap; }
+td.off, th.off { opacity: .35; }
+.tag { display: inline-block; text-transform: none; letter-spacing: 0; font-size: 0.68rem; padding: 0 6px; border-radius: 999px; margin-left: 4px; background: var(--blue-soft); color: var(--blue); }
+.msg { font-size: 0.92rem; padding: 10px 12px; border-radius: 6px; margin: 0; }
+.msg.ok { background: var(--green-soft); }
+.msg.err { background: var(--danger-soft); }
+.msg.info { background: var(--blue-soft); }
+.confirm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--danger-soft); padding: 10px 14px; border-radius: 6px; }
+.empty { text-align: center; padding: 44px 16px; display: flex; flex-direction: column; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.empty h3 { font-family: var(--font-display); margin: 0; font-size: 1.5rem; }
+.empty p { margin: 0; color: var(--muted); max-width: 56ch; }
+mark { background: #fde9b8; color: #0f1b2d; padding: 0 2px; border-radius: 3px; }
+/* filtros productos */
+.pfilters { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end; margin-bottom: 12px; }
+.pf { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.pf span { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.pf input, .pf select { width: 100%; min-height: 40px; }
+.pclear { min-height: 40px; }
+tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; letter-spacing: .02em; }
+@media (max-width: 640px) { .pfilters { grid-template-columns: 1fr 1fr; } .pf.grow { grid-column: 1 / -1; } }
+
+/* precios */
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: start; }
+.tier { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; display: flex; flex-direction: column; min-width: 0; }
+.tier-head { padding: 18px 20px 16px; border-bottom: 1px solid var(--line); }
+.tier-head h3 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; display: flex; align-items: center; gap: 8px; line-height: 1.1; }
+.tier-head h3 i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex: none; }
+.tier-head b { display: block; font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.tier-head p { margin: 6px 0 0; color: var(--muted); font-size: 0.9rem; }
+.tier-body { max-height: 640px; overflow-y: auto; padding: 8px 20px 16px; }
+.tier-group { padding-top: 12px; }
+.tier-group h4 { margin: 0 0 4px; font-size: 0.74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.tier-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 14px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.tier-row .n { overflow-wrap: anywhere; }
+.tier-row .pr { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.tier-row .m { grid-column: 1 / -1; color: var(--muted); font-size: 0.84rem; }
+.tier-empty { color: var(--muted); text-align: center; padding: 32px 10px; margin: 0; }
+
+/* organigrama */
+.org-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid var(--line); }
+.org-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px 16px 28px; }
+.org { display: inline-flex; flex-direction: column; align-items: center; min-width: 100%; background: var(--surface); }
+.onode { text-align: center; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.onode .t { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; line-height: 1.1; text-wrap: balance; }
+.onode .s { font-size: 0.82rem; }
+.onode.root { background: var(--navy); color: var(--on-navy); min-width: 300px; padding: 16px 28px; }
+.onode.root .t { font-size: 1.7rem; font-weight: 800; }
+.onode.root .s { opacity: .85; }
+.onode.group { background: var(--surface-2); width: 100%; }
+.onode.group .s { color: var(--muted); }
+.onode button { font-size: 0.8rem; min-height: 30px; padding: 4px 12px; }
+.okids { display: flex; align-items: flex-start; position: relative; padding-top: 22px; }
+.okids::before { content: ""; position: absolute; top: 0; left: 50%; height: 22px; border-left: 1px solid var(--muted); opacity: .5; }
+.obranch { position: relative; padding: 22px 7px 0; display: flex; flex-direction: column; align-items: center; }
+.obranch::before { content: ""; position: absolute; top: 0; left: 0; right: 0; border-top: 1px solid var(--muted); opacity: .5; }
+.obranch:first-child::before { left: 50%; }
+.obranch:last-child::before { right: 50%; }
+.obranch:only-child::before { display: none; }
+.obranch::after { content: ""; position: absolute; top: 0; left: 50%; height: 22px; border-left: 1px solid var(--muted); opacity: .5; }
+.ocol { width: 200px; display: flex; flex-direction: column; align-items: stretch; }
+.ohead { padding: 12px 10px; text-align: center; background: var(--blue-soft); color: var(--fg); }
+.ohead .t { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; line-height: 1.1; overflow-wrap: anywhere; }
+.ohead .s { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+.ocards { display: flex; flex-direction: column; gap: 9px; padding-top: 14px; position: relative; }
+.ocards::before { content: ""; position: absolute; top: 0; left: 50%; height: 14px; border-left: 1px solid var(--muted); opacity: .5; }
+.ocard { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--blue-line); padding: 9px 10px; text-align: center; font-size: 0.86rem; line-height: 1.3; }
+.ocard .m { color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
+.ocard.more { border-top-color: var(--line); color: var(--blue); font-weight: 600; cursor: pointer; background: var(--surface-2); }
+.ocard.more:hover { border-color: var(--blue); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+<style>html,body{margin:0}</style>
+</head>
+<body>
+<script>
+/* Modo independiente (GitHub Pages): guarda en el navegador (localStorage) y arranca con data/arbol.json. */
+(function () {
+  var SEED = window.__ARBOL_SEED || null;
+  var mem = {}, KEY = "arbol-febeca:" + (SEED && SEED.meta ? SEED.meta.version + ":" : "");
+  function lsGet(p) { try { var v = localStorage.getItem(KEY + p); return v ? JSON.parse(v) : undefined; } catch (_) { return undefined; } }
+  function lsSet(p, v) { try { localStorage.setItem(KEY + p, JSON.stringify(v)); } catch (e) { var err = new Error("Sin espacio en el navegador"); err.code = "quota_exceeded"; throw err; } }
+  function lsDel(p) { try { localStorage.removeItem(KEY + p); localStorage.setItem(KEY + "borrado", "1"); } catch (_) {} }
+  var ready = (async function () {
+    var cleared = false; try { cleared = localStorage.getItem(KEY + "borrado") === "1"; } catch (_) {}
+    if (lsGet("arbol/meta") || cleared) return;
+    try {
+      var s = SEED;
+      if (!s) {
+        var urls = ["data/arbol.json", "arbol.json"];
+        for (var i = 0; i < urls.length && !s; i++) { try { var r = await fetch(urls[i], { cache: "no-store" }); if (r.ok) s = await r.json(); } catch (_) {} }
+        if (!s) return;
+      }
+      mem["arbol/meta"] = s.meta;
+      Object.keys(s.partes || {}).forEach(function (k) { mem["arbol_partes/" + k] = s.partes[k]; });
+    } catch (_) {}
+  })();
+  function read(p) { var v = lsGet(p); if (v !== undefined) return v; return mem[p]; }
+  var listeners = {};
+  var db = {
+    doc: function (p) {
+      return {
+        get: async function () { await ready; var v = read(p); return { exists: v !== undefined, data: function () { return v; } }; },
+        set: async function (v) { lsSet(p, v); try { localStorage.removeItem(KEY + "borrado"); } catch (_) {} },
+        delete: async function () { lsDel(p); delete mem[p]; },
+        onSnapshot: function (fn) { ready.then(function () { var v = read(p); fn({ exists: v !== undefined, data: function () { return v; } }); }); return function () {}; }
+      };
+    }
+  };
+  var downloads = {
+    save: async function (o) {
+      var blob = o.data instanceof Blob ? o.data : new Blob([o.data]);
+      var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = o.filename;
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    }
+  };
+  window.claude = { use: async function (n) { return n === "db" ? db : n === "downloads" ? downloads : null; } };
+})();
+</script>
+
+
+<div class="page">
+  <header>
+    <p class="eyebrow">Febeca · Gestión de categorías</p>
+    <h1>Árbol de categorías Febeca</h1>
+    <p class="lede">Cada código vive en un solo lugar del árbol: categoría, subcategoría y artículo. Aquí se cruzan marca, precio, inventario y venta por categoría.</p>
+  </header>
+
+  <p class="banner" id="banner">Conectando…</p>
+  <div class="kpis" id="kpis" hidden></div>
+  <div id="brandBox" hidden>
+    <div class="brands" id="brands"></div>
+  </div>
+  <p class="note" id="brandNote" hidden>Elige una marca: todo lo que ves trabaja únicamente con esa marca.</p>
+
+  <div class="tabs" role="tablist" aria-label="Vistas">
+    <button class="tab" role="tab" id="t-productos" data-v="productos" type="button">Productos</button>
+    <button class="tab" role="tab" id="t-categorias" data-v="categorias" type="button">Categorías y árbol</button>
+    <button class="tab" role="tab" id="t-precios" data-v="precios" type="button">Precios</button>
+    <button class="tab" role="tab" id="t-organigrama" data-v="organigrama" type="button">Organigrama</button>
+    <button class="tab" role="tab" id="t-estructura" data-v="estructura" type="button">Estructura</button>
+    <button class="tab" role="tab" id="t-datos" data-v="datos" type="button">Datos a ingresar</button>
+  </div>
+
+  <section id="v-productos" role="tabpanel" hidden></section>
+  <section id="v-categorias" role="tabpanel" hidden></section>
+  <section id="v-precios" role="tabpanel" hidden></section>
+  <section id="v-organigrama" role="tabpanel" hidden></section>
+  <section id="v-estructura" role="tabpanel" hidden></section>
+  <section id="v-datos" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between">
+        <h2>Cargar información</h2>
+        <div class="row">
+          <button id="btnTemplate" type="button">Descargar plantilla</button>
+          <button id="btnExport" type="button" hidden>Exportar (.xlsx)</button>
+          <button id="btnClear" type="button" class="danger" hidden>Vaciar árbol</button>
+        </div>
+      </div>
+      <div id="confirmBox" hidden></div>
+      <p class="hint">Sube un Excel o CSV con una fila por código. Columnas sugeridas: <span class="mono">categoria · subcategoria · producto · sku · marca · modalidad · precio · inventario · costo · venta_mes</span>. Solo son obligatorias las de nivel; modalidad (por ejemplo «Autoservicio con apoyo» o «Venta asistida»), inventario, costo y venta son opcionales y, si vienen, aparecen en las métricas. Al guardar, el árbol nuevo se guarda en este navegador y reemplaza al actual.</p>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Seleccionar archivo Excel o CSV">
+        <strong>Arrastra el archivo aquí o haz clic para elegirlo</strong>
+        <span>.xlsx · .xls · .csv · se lee la primera hoja</span>
+      </div>
+      <input type="file" id="file" accept=".xlsx,.xls,.csv,.txt" hidden>
+      <div id="importArea" hidden></div>
+      <p class="msg" id="loadMsg" hidden></p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const CHUNK = 450;
+  const ROLES = [
+    ["lvl", "Nivel del árbol"], ["c", "Código"], ["m", "Marca"], ["pr", "Precio"],
+    ["md", "Modalidad de venta"], ["inv", "Inventario (unidades)"], ["cost", "Costo unitario"], ["vta", "Venta por mes"], ["dat", "Otro dato"], ["ign", "Ignorar"]
+  ];
+  const TEMPLATE = [
+    ["categoria", "subcategoria", "producto", "sku", "marca", "modalidad", "precio", "inventario", "costo", "venta_mes"],
+    ["Plomería", "Válvulas de bola", "Llave de bola PVC 1/2\" roscar", "22-70-165", "Pavco", "Autoservicio con apoyo", 3.2, 1200, 2.1, 340],
+    ["Exteriores", "Mangueras para riego", "Manguera de riego 1/2\" x 100 m 90 psi", "18-40-025", "Libertyplas", "Autoservicio con apoyo", 37.37, 80, 26.5, 22],
+    ["Construcción", "Tanques", "Tanque 1.000 L", "10-61-004", "Acero Febeca", "Venta asistida", 120, 15, 88, 6]
+  ];
+  const EMPTY = { rows: [], levels: [], has: {}, extras: [], filename: "", updatedAt: "", version: "" };
+
+  let db = null, downloads = null;
+  let state = EMPTY, brand = "", view = "categorias";
+  let tree = null, sel = [], pending = null;
+  let prodSort = { key: "c", dir: 1 }, prodLimit = 150;
+
+  // ---------- helpers ----------
+  const norm = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const nf0 = new Intl.NumberFormat("es-VE", { maximumFractionDigits: 0 });
+  const nf2 = new Intl.NumberFormat("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const nf1 = new Intl.NumberFormat("es-VE", { maximumFractionDigits: 1 });
+  const fN = (n) => nf0.format(n);
+  const fMoney = (n) => "$" + nf2.format(n);
+  function fShort(n) {
+    const a = Math.abs(n);
+    if (a >= 1e6) return "$" + nf1.format(n / 1e6) + " M";
+    if (a >= 1e3) return "$" + nf1.format(n / 1e3) + " k";
+    return "$" + nf2.format(n);
+  }
+  const byName = (a, b) => a.name.localeCompare(b.name, "es", { numeric: true, sensitivity: "base" });
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function num(v) {
+    if (v === "" || v == null) return null;
+    if (typeof v === "number") return v;
+    let s = String(v).trim().replace(/[$\s]/g, "");
+    if (s.includes(",") && s.includes(".")) s = s.lastIndexOf(",") > s.lastIndexOf(".") ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+    else if (s.includes(",")) s = s.replace(",", ".");
+    const n = Number(s);
+    return isFinite(n) ? n : null;
+  }
+  const levelName = (i) => {
+    const raw = state.levels[i];
+    if (!raw) return ["Categoría", "Subcategoría", "Artículo"][i] || "Nivel " + (i + 1);
+    const n = norm(raw);
+    if (n === "categoria") return "Categoría";
+    if (n === "subcategoria") return "Subcategoría";
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  };
+  const plural = (i) => { const l = levelName(i); return /[aeiou]$/i.test(l) ? l + "s" : l + "es"; };
+  const valOf = (r) => (r.inv != null ? r.inv * (r.cost != null ? r.cost : (r.pr || 0)) : 0);
+
+  // ---------- data ----------
+  const rowsF = () => (brand ? state.rows.filter(r => (r.m || "Sin marca") === brand) : state.rows);
+  function buildTree(rows) {
+    const mk = (name, parent, depth) => ({ name, parent, depth, kids: new Map(), count: 0, inv: 0, val: 0, vta: 0, prS: 0, prN: 0, rows: [] });
+    const root = mk("", null, 0);
+    for (const r of rows) {
+      let cur = root; add(cur, r);
+      r.p.forEach((name, i) => {
+        let nx = cur.kids.get(name);
+        if (!nx) { nx = mk(name, cur, i + 1); cur.kids.set(name, nx); }
+        add(nx, r); cur = nx;
+      });
+      cur.leafRow = r;
+    }
+    return root;
+    function add(n, r) {
+      n.count++; n.rows.push(r);
+      if (r.inv != null) n.inv += r.inv;
+      n.val += valOf(r);
+      if (r.vta != null) n.vta += r.vta;
+      if (r.pr != null) { n.prS += r.pr; n.prN++; }
+    }
+  }
+  const sortedKids = (n) => n._s || (n._s = [...n.kids.values()].sort(byName));
+  const pathOf = (n) => { const p = []; for (let c = n; c && c.parent; c = c.parent) p.unshift(c); return p; };
+  function countAtDepth(n, d) { let c = 0; (function w(x) { for (const k of x.kids.values()) { if (k.depth === d && k.kids.size) c++; if (k.depth < d) w(k); } })(n); return c; }
+
+  // ---------- header ----------
+  function renderTop() {
+    const has = state.rows.length > 0;
+    $("kpis").hidden = !has; $("brandBox").hidden = !has; $("brandNote").hidden = !has;
+    $("btnExport").hidden = !has; $("btnClear").hidden = !has;
+    const b = $("banner"); b.replaceChildren();
+    if (!has) {
+      b.append(db ? "Todavía no hay información cargada. Ve a " : "Sin información cargada. Los cambios solo se verán en esta pestaña. Ve a ");
+      b.appendChild(el("b", null, "«Datos a ingresar»")); b.append(" y sube tu Excel de productos.");
+      return;
+    }
+    const when = state.updatedAt ? new Date(state.updatedAt).toLocaleDateString("es-VE", { day: "numeric", month: "short", year: "numeric" }) : "";
+    b.appendChild(el("b", null, "Fuente: " + (state.filename || "archivo") + (when ? " · " + when : "")));
+    const parts = [" · " + fN(state.rows.length) + " códigos."];
+    if (state.has.pr) parts.push(" Precios en dólares.");
+    const miss = [];
+    if (!state.has.inv) miss.push("inventario"); if (!state.has.vta) miss.push("venta por mes");
+    if (miss.length) parts.push(" El archivo no trae " + miss.join(" ni ") + "; súbelos en «Datos a ingresar» para ver esas métricas.");
+    else parts.push(" En «Datos a ingresar» puedes cargar un reporte más reciente.");
+    if (!db) parts.push(" Solo en esta pestaña.");
+    b.append(parts.join(""));
+
+    // KPIs
+    const k = $("kpis"); k.replaceChildren();
+    const add = (v, l, hero) => { const d = el("div", "kpi" + (hero ? " hero" : "")); d.append(el("b", null, v), el("small", null, l)); k.appendChild(d); };
+    add(fN(tree.kids.size), plural(0), true);
+    const depthMax = Math.max(...state.rows.map(r => r.p.length));
+    if (depthMax > 2) add(fN(countAtDepth(tree, 2)), plural(1));
+    add(fN(tree.count), "Códigos");
+    if (state.has.m) add(fN(new Set(rowsF().map(r => r.m || "Sin marca")).size), "Marcas");
+    if (state.has.inv) add(fShort(tree.val), "Inventario valorado");
+    if (state.has.vta) add(fN(tree.vta), "Venta / mes (unds)");
+    if (state.has.pr && tree.prN) add(fMoney(tree.prS / tree.prN), "Precio promedio");
+
+    // marcas
+    const bx = $("brands"); bx.replaceChildren();
+    if (!state.has.m) { $("brandBox").hidden = true; $("brandNote").hidden = true; return; }
+    bx.appendChild(el("span", "lab", "Marca"));
+    const counts = new Map();
+    state.rows.forEach(r => { const m = r.m || "Sin marca"; counts.set(m, (counts.get(m) || 0) + 1); });
+    const chip = (label, val, n) => {
+      const c = el("button", "chip" + (brand === val ? " on" : "")); c.type = "button";
+      c.setAttribute("aria-pressed", String(brand === val));
+      c.append(label, el("small", null, fN(n)));
+      c.addEventListener("click", () => { brand = val; sel = []; prodLimit = 150; refresh(); });
+      bx.appendChild(c);
+    };
+    chip("Todas", "", state.rows.length);
+    [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es")).forEach(([m, n]) => chip(m, m, n));
+  }
+
+  // ---------- tabs ----------
+  function setView(v, push) {
+    view = v;
+    document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.v === v)));
+    ["productos", "categorias", "precios", "organigrama", "estructura", "datos"].forEach(x => { $("v-" + x).hidden = x !== v; });
+    if (push) { try { history.replaceState(null, "", "#" + v); } catch (_) {} }
+    renderView();
+  }
+  function renderView() {
+    if (view === "productos") renderProductos();
+    else if (view === "categorias") renderCategorias();
+    else if (view === "precios") renderPrecios();
+    else if (view === "organigrama") renderOrganigrama();
+    else if (view === "estructura") renderEstructura();
+  }
+  function emptyState(host) {
+    host.replaceChildren();
+    const box = el("div", "empty");
+    box.appendChild(el("h3", null, "Todavía no hay categorías"));
+    box.appendChild(el("p", null, "Sube el Excel de productos en «Datos a ingresar». Cada fila se ubica en el árbol según sus columnas de nivel, por ejemplo: Plomería › Válvulas de bola › Llave de bola PVC 1/2\"."));
+    const go = el("button", "primary", "Ir a Datos a ingresar"); go.type = "button";
+    go.addEventListener("click", () => setView("datos", true));
+    box.appendChild(go); host.appendChild(box);
+  }
+
+  // ---------- metrics ----------
+  function metricsFor(n, depth) {
+    const m = el("div", "metrics");
+    const add = (v, l) => { const d = el("div", "metric"); d.append(el("b", null, v), el("small", null, l)); m.appendChild(d); };
+    add(fN(n.count), "Códigos");
+    if (state.has.inv) { add(fN(n.inv), "Inv. unds"); add(fShort(n.val), "Valorado"); }
+    if (state.has.vta) add(fN(n.vta), "Venta/mes");
+    if (state.has.pr && (!state.has.inv || !state.has.vta)) add(n.prN ? fMoney(n.prS / n.prN) : "—", "Precio prom.");
+    if (state.has.m && !brand && depth === 1) add(fN(new Set(n.rows.map(r => r.m || "Sin marca")).size), "Marcas");
+    return m;
+  }
+
+  // ---------- Categorías y árbol ----------
+  function renderCategorias() {
+    const host = $("v-categorias");
+    if (!state.rows.length) return emptyState(host);
+    host.replaceChildren();
+    const cats = [...tree.kids.values()].sort((a, b) => b.count - a.count || byName(a, b));
+    const max = Math.max(...cats.map(c => c.count));
+    const wrap = el("div", "cats");
+    for (const c of cats) {
+      const d = el("details", "cat");
+      const s = el("summary");
+      const nm = el("div", "cname"); const t = el("div", "t");
+      t.append(el("span", "nm", c.name));
+      if (c.kids.size && [...c.kids.values()].some(k => k.kids.size)) t.append(el("span", "sc", fN(c.kids.size) + " " + plural(1).toLowerCase()));
+      else if (c.kids.size) t.append(el("span", "sc", fN(c.kids.size) + " elementos"));
+      const bar = el("div", "bar"); const i = el("i"); i.style.width = (c.count / max * 100).toFixed(1) + "%"; bar.appendChild(i);
+      nm.append(t, bar); s.append(nm, metricsFor(c, 1)); d.appendChild(s);
+      d.addEventListener("toggle", () => { if (d.open && !d._r) { d._r = 1; d.appendChild(renderSubs(c)); } });
+      wrap.appendChild(d);
+    }
+    host.appendChild(wrap);
+  }
+  function renderSubs(c) {
+    const box = el("div", "subs");
+    const kids = [...c.kids.values()];
+    if (!kids.some(k => k.kids.size)) { box.appendChild(itemsTable(c.rows)); return box; }
+    kids.sort((a, b) => b.count - a.count || byName(a, b));
+    const max = Math.max(...kids.map(k => k.count));
+    for (const k of kids) {
+      const d = el("details", "sub"); const s = el("summary");
+      const nm = el("div", "cname"); const t = el("div", "t");
+      t.append(el("span", "nm", k.name));
+      const bar = el("div", "bar"); const i = el("i"); i.style.width = (k.count / max * 100).toFixed(1) + "%"; bar.appendChild(i);
+      nm.append(t, bar); s.append(nm, metricsFor(k, 2)); d.appendChild(s);
+      d.addEventListener("toggle", () => { if (d.open && !d._r) { d._r = 1; const w = el("div", "items"); w.appendChild(itemsTable(k.rows)); d.appendChild(w); } });
+      box.appendChild(d);
+    }
+    return box;
+  }
+  function itemsTable(rows) {
+    const w = el("div", "tablewrap"); const t = el("table"); const tr = el("tr");
+    const cols = productCols(false);
+    cols.forEach(c => tr.appendChild(el("th", c.num ? "num" : "", c.label)));
+    t.appendChild(el("thead")).appendChild(tr);
+    const tb = el("tbody");
+    [...rows].sort((a, b) => String(a.c || "").localeCompare(String(b.c || ""), "es", { numeric: true })).forEach(r => tb.appendChild(productRow(r, cols)));
+    t.appendChild(tb); w.appendChild(t); return w;
+  }
+
+  // ---------- Productos ----------
+  function productCols(withPath) {
+    const cols = [];
+    if (state.has.c) cols.push({ key: "c", label: "Código", cls: "code", get: r => r.c || "" });
+    cols.push({ key: "name", label: levelName(Math.max(0, (state.levels.length || 1) - 1)), get: r => r.p[r.p.length - 1], path: withPath });
+    if (state.has.m) cols.push({ key: "m", label: "Marca", get: r => r.m || "" });
+    if (state.has.pr) cols.push({ key: "pr", label: "Precio", num: true, get: r => r.pr, fmt: v => v == null ? "—" : fMoney(v) });
+    if (state.has.inv) cols.push({ key: "inv", label: "Inv. unds", num: true, get: r => r.inv, fmt: v => v == null ? "—" : fN(v) });
+    if (state.has.inv) cols.push({ key: "val", label: "Valorado", num: true, get: r => valOf(r), fmt: v => fShort(v) });
+    if (state.has.vta) cols.push({ key: "vta", label: "Venta/mes", num: true, get: r => r.vta, fmt: v => v == null ? "—" : fN(v) });
+    (state.extras || []).forEach(x => cols.push({ key: "x:" + x, label: x, get: r => (r.x && r.x[x]) || "" }));
+    return cols;
+  }
+  function productRow(r, cols, q) {
+    const tr = el("tr");
+    cols.forEach(c => {
+      const v = c.get(r);
+      const td = el("td", (c.num ? "num" : "") + (c.cls ? " " + c.cls : ""));
+      if (c.key === "name" && q) markText(td, String(v), q); else td.textContent = c.fmt ? c.fmt(v) : (v ?? "");
+      if (c.key === "c" && q) { td.textContent = ""; markText(td, String(v), q); }
+      if (c.path) td.appendChild(el("span", "path", r.p.slice(0, -1).join(" › ")));
+      tr.appendChild(td);
+    });
+    return tr;
+  }
+  const pf = { q: "", org: "", cat: "", sub: "", md: "", rango: "", inv: "", vta: "", x: {} };
+  const RANGOS = [["eco", "Económico (hasta $10)", (p) => p <= 10], ["med", "Medio ($10 a $40)", (p) => p > 10 && p <= 40], ["pre", "Premium (más de $40)", (p) => p > 40], ["sin", "Sin precio", null]];
+  function rangoDe(r) { if (r.pr == null) return "sin"; for (const [k, , t] of RANGOS) if (t && t(r.pr)) return k; return "sin"; }
+  function field(label, ctrl, grow) {
+    const w = el("label", "pf"); if (grow) w.classList.add("grow");
+    w.append(el("span", null, label), ctrl); return w;
+  }
+  function selectOf(id, opts, val, onChange) {
+    const s = el("select"); s.id = id;
+    opts.forEach(([v, t]) => { const o = el("option", null, t); o.value = v; s.appendChild(o); });
+    s.value = opts.some(o => o[0] === val) ? val : opts[0][0];
+    s.addEventListener("change", () => onChange(s.value));
+    return s;
+  }
+  function extraValues(x) {
+    const set = new Set(); for (const r of state.rows) { const v = r.x && r.x[x]; if (v !== undefined && v !== "") set.add(String(v)); if (set.size > 60) return null; }
+    return [...set].sort((a, b) => a.localeCompare(b, "es", { numeric: true }));
+  }
+  function buildProdBar(host) {
+    const bar = el("div", "pfilters");
+    const q = el("input"); q.type = "search"; q.id = "pq"; q.value = pf.q; q.placeholder = "Ej. tubo conduit, 22-70-165, llave de bola";
+    let t; q.addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { pf.q = q.value; prodLimit = 150; renderProductos(); }, 160); });
+    bar.appendChild(field("Buscar producto o código", q, true));
+    const orgOpts = [["", "Sin agrupar"], ["cat", levelName(0)]];
+    if (state.levels.length > 2) orgOpts.push(["sub", levelName(1)]);
+    if (state.has.m) orgOpts.push(["m", "Marca"]);
+    if (state.has.md) orgOpts.push(["md", "Modalidad"]);
+    if (state.has.pr) orgOpts.push(["rango", "Rango de precio"]);
+    bar.appendChild(field("Organizar por", selectOf("porg", orgOpts, pf.org, v => { pf.org = v; renderProductos(); })));
+    const cats = [["", "Todas"], ...sortedKids(buildTree(state.rows)).map(k => [k.name, k.name])];
+    bar.appendChild(field(levelName(0), selectOf("pcat", cats, pf.cat, v => { pf.cat = v; pf.sub = ""; prodLimit = 150; renderProductos(); })));
+    if (state.levels.length > 2) { const w = field(levelName(1), el("select")); w.id = "psubWrap"; bar.appendChild(w); }
+    if (state.has.m) {
+      const ms = [...new Set(state.rows.map(r => r.m || "Sin marca"))].sort((a, b) => a.localeCompare(b, "es"));
+      bar.appendChild(field("Marca", selectOf("pm", [["", "Todas"], ...ms.map(m => [m, m])], brand, v => { brand = v; sel = []; prodLimit = 150; refresh(); })));
+    }
+    if (state.has.md) {
+      const ms = [...new Set(state.rows.map(r => r.md).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+      bar.appendChild(field("Modalidad", selectOf("pmd", [["", "Todas"], ...ms.map(m => [m, m])], pf.md, v => { pf.md = v; prodLimit = 150; renderProductos(); })));
+    }
+    if (state.has.pr) bar.appendChild(field("Rango de precio", selectOf("prg", [["", "Todos"], ...RANGOS.map(([k, t]) => [k, t])], pf.rango, v => { pf.rango = v; prodLimit = 150; renderProductos(); })));
+    if (state.has.inv) bar.appendChild(field("Inventario", selectOf("pinv", [["", "Todos"], ["con", "Con inventario"], ["sin", "Sin inventario"]], pf.inv, v => { pf.inv = v; prodLimit = 150; renderProductos(); })));
+    if (state.has.vta) bar.appendChild(field("Venta", selectOf("pvta", [["", "Todos"], ["con", "Con venta"], ["sin", "Sin venta"]], pf.vta, v => { pf.vta = v; prodLimit = 150; renderProductos(); })));
+    (state.extras || []).forEach((x, i) => {
+      const vals = extraValues(x); if (!vals || vals.length < 2) return;
+      bar.appendChild(field(x, selectOf("px" + i, [["", "Todos"], ...vals.map(v => [v, v])], pf.x[x] || "", v => { pf.x[x] = v; prodLimit = 150; renderProductos(); })));
+    });
+    const clear = el("button", "pclear", "Limpiar filtros"); clear.type = "button";
+    clear.addEventListener("click", () => { Object.assign(pf, { q: "", org: "", cat: "", sub: "", md: "", rango: "", inv: "", vta: "", x: {} }); brand = ""; prodLimit = 150; host._ver = ""; refresh(); });
+    bar.appendChild(clear);
+    return bar;
+  }
+  function renderProductos() {
+    const host = $("v-productos");
+    if (!state.rows.length) return emptyState(host);
+    const ver = state.version + "|" + state.rows.length;
+    if (host._ver !== ver) {
+      host.replaceChildren(); host._ver = ver;
+      host.appendChild(buildProdBar(host));
+      host.appendChild(el("p", "hint pcount"));
+      host.appendChild(el("div", "tablewrap ptable"));
+      const more = el("button", "pmore", "Mostrar más"); more.type = "button"; more.style.marginTop = "12px";
+      more.addEventListener("click", () => { prodLimit += 300; renderProductos(); });
+      host.appendChild(more);
+    }
+    const pm = $("pm"); if (pm) pm.value = brand;
+    // subcategoría dependiente
+    const sw = $("psubWrap");
+    if (sw) {
+      const base = pf.cat ? state.rows.filter(r => r.p[0] === pf.cat) : state.rows;
+      const subs = [...new Set(base.map(r => r.p[1]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+      if (!subs.includes(pf.sub)) pf.sub = "";
+      sw.querySelector("select").replaceWith(selectOf("psub", [["", "Todas"], ...subs.map(v => [v, v])], pf.sub, v => { pf.sub = v; prodLimit = 150; renderProductos(); }));
+    }
+    const q = norm(pf.q.trim());
+    let rows = rowsF().filter(r =>
+      (!pf.cat || r.p[0] === pf.cat) && (!pf.sub || r.p[1] === pf.sub) &&
+      (!pf.md || r.md === pf.md) && (!pf.rango || rangoDe(r) === pf.rango) &&
+      (!pf.inv || (pf.inv === "con" ? (r.inv || 0) > 0 : !((r.inv || 0) > 0))) &&
+      (!pf.vta || (pf.vta === "con" ? (r.vta || 0) > 0 : !((r.vta || 0) > 0))) &&
+      Object.entries(pf.x).every(([k, v]) => !v || String((r.x && r.x[k]) ?? "") === v) &&
+      (!q || norm(r.p.join(" ")).includes(q) || norm(r.c).includes(q) || norm(r.m).includes(q)));
+    const cols = productCols(true);
+    const sc = cols.find(c => c.key === prodSort.key) || cols[0];
+    rows = [...rows].sort((a, b) => {
+      const x = sc.get(a), y = sc.get(b);
+      if (sc.num) return ((x ?? -Infinity) - (y ?? -Infinity)) * prodSort.dir;
+      return String(x).localeCompare(String(y), "es", { numeric: true, sensitivity: "base" }) * prodSort.dir;
+    });
+    const host2 = $("v-productos");
+    host2.querySelector(".pcount").textContent = fN(rows.length) + (rows.length === 1 ? " código" : " códigos") + (rows.length > prodLimit ? " · se muestran " + fN(prodLimit) : "");
+    const t = el("table"); const tr = el("tr");
+    cols.forEach(c => {
+      const th = el("th", c.num ? "num" : "");
+      const b = el("button", null, c.label + (prodSort.key === c.key ? (prodSort.dir > 0 ? " ↑" : " ↓") : "")); b.type = "button";
+      b.addEventListener("click", () => { prodSort = { key: c.key, dir: prodSort.key === c.key ? -prodSort.dir : (c.num ? -1 : 1) }; renderProductos(); });
+      th.appendChild(b); tr.appendChild(th);
+    });
+    t.appendChild(el("thead")).appendChild(tr);
+    const tb = el("tbody");
+    const shown = rows.slice(0, prodLimit);
+    if (pf.org) {
+      const keyOf = { cat: r => r.p[0], sub: r => r.p[1] || "—", m: r => r.m || "Sin marca", md: r => r.md || "Sin modalidad", rango: r => (RANGOS.find(x => x[0] === rangoDe(r)) || [, "Sin precio"])[1] }[pf.org];
+      const totals = new Map(); rows.forEach(r => { const k = keyOf(r); totals.set(k, (totals.get(k) || 0) + 1); });
+      const groups = new Map(); shown.forEach(r => { const k = keyOf(r); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
+      const order = pf.org === "rango" ? RANGOS.map(x => x[1]).filter(k => groups.has(k)) : [...groups.keys()].sort((a, b) => a.localeCompare(b, "es"));
+      for (const k of order) {
+        const gr = el("tr", "grp"); const td = el("td", null, k + " · " + fN(totals.get(k))); td.colSpan = cols.length; gr.appendChild(td); tb.appendChild(gr);
+        groups.get(k).forEach(r => tb.appendChild(productRow(r, cols, q)));
+      }
+    } else shown.forEach(r => tb.appendChild(productRow(r, cols, q)));
+    if (!rows.length) { const er = el("tr"); const td = el("td", "muted", "Ningún código coincide con los filtros."); td.colSpan = cols.length; er.appendChild(td); tb.appendChild(er); }
+    t.appendChild(tb);
+    host2.querySelector(".ptable").replaceChildren(t);
+    host2.querySelector(".pmore").hidden = rows.length <= prodLimit;
+  }
+  function markText(target, text, q) {
+    const i = norm(text).indexOf(q);
+    if (!q || i < 0) { target.append(text); return; }
+    target.append(text.slice(0, i), el("mark", null, text.slice(i, i + q.length)), text.slice(i + q.length));
+  }
+
+  // ---------- Estructura (explorador) ----------
+  function renderEstructura() {
+    const host = $("v-estructura");
+    if (!state.rows.length) return emptyState(host);
+    host.replaceChildren();
+    // re-anchor selection to the current tree
+    const names = sel.map(n => n.name); sel = []; let cur = tree;
+    for (const nm of names) { const k = cur.kids.get(nm); if (!k) break; sel.push(k); cur = k; }
+    const ex = el("div", "explorer");
+    const cr = el("nav", "crumbs"); cr.setAttribute("aria-label", "Ruta");
+    const home = el("button", null, "Inicio"); home.type = "button"; home.addEventListener("click", () => { sel = []; renderEstructura(); });
+    cr.appendChild(home);
+    sel.forEach((n, i) => {
+      cr.appendChild(el("span", "muted", "›"));
+      if (i === sel.length - 1) cr.appendChild(el("span", "here", n.name));
+      else { const b = el("button", null, n.name); b.type = "button"; b.addEventListener("click", () => { sel = sel.slice(0, i + 1); renderEstructura(); }); cr.appendChild(b); }
+    });
+    ex.appendChild(cr);
+    const wrap = el("div", "cols");
+    const leafSel = sel.length > 0 && !sel[sel.length - 1].kids.size;
+    const activeIdx = leafSel ? -1 : sel.length;
+    let parent = tree;
+    for (let i = 0; parent && parent.kids.size; i++) {
+      const col = el("div", "col" + (i === activeIdx ? " active" : ""));
+      const head = el("div", "col-head"); head.append(el("span", null, levelName(i)), el("span", null, fN(parent.kids.size)));
+      const list = el("div", "col-list");
+      for (const k of sortedKids(parent)) {
+        const isSel = sel[i] === k;
+        const b = el("button", "item" + (isSel && i === sel.length - 1 ? " sel" : isSel ? " trail" : "")); b.type = "button";
+        b.appendChild(el("span", "nm", k.name));
+        if (!k.kids.size && k.leafRow && k.leafRow.c) b.appendChild(el("span", "code", k.leafRow.c));
+        if (k.kids.size) { b.appendChild(el("span", "n", fN(k.count))); b.appendChild(el("span", "chev", "›")); }
+        b.addEventListener("click", () => { sel = sel.slice(0, i).concat(k); renderEstructura(); });
+        list.appendChild(b);
+      }
+      col.append(head, list); wrap.appendChild(col);
+      parent = sel[i] || null;
+    }
+    const det = el("div", "detail" + (leafSel ? " active" : ""));
+    const node = sel[sel.length - 1];
+    const tiles = el("div", "tiles");
+    const tile = (l, v, cls) => { const d = el("div", "tile" + (cls ? " " + cls : "")); d.append(el("small", null, l), el("b", null, v)); tiles.appendChild(d); };
+    if (!node) {
+      det.append(el("h3", null, "Todo el árbol"), el("p", "path", "Elige una " + levelName(0).toLowerCase() + " para bajar por el árbol."));
+      tile(plural(0), fN(tree.kids.size)); tile("Códigos", fN(tree.count));
+    } else {
+      det.append(el("h3", null, node.name), el("p", "path", pathOf(node).map(n => n.name).join(" › ")));
+      const r = !node.kids.size ? node.leafRow : null;
+      if (r) {
+        if (r.c) tile("Código", r.c, "code");
+        if (r.m) tile("Marca", r.m);
+        if (r.pr != null) tile("Precio", fMoney(r.pr));
+        if (r.inv != null) { tile("Inventario", fN(r.inv) + " unds"); tile("Valorado", fShort(valOf(r))); }
+        if (r.cost != null) tile("Costo", fMoney(r.cost));
+        if (r.vta != null) tile("Venta/mes", fN(r.vta));
+        for (const [k, v] of Object.entries(r.x || {})) tile(k, v);
+      } else {
+        tile(plural(node.depth), fN(node.kids.size)); tile("Códigos", fN(node.count));
+        if (state.has.inv) tile("Valorado", fShort(node.val));
+        if (state.has.vta) tile("Venta/mes", fN(node.vta));
+        if (state.has.pr && node.prN) tile("Precio prom.", fMoney(node.prS / node.prN));
+      }
+    }
+    det.appendChild(tiles);
+    if (node && !node.kids.size && node.leafRow && node.leafRow.c) {
+      const b = el("button", null, "Copiar código"); b.type = "button"; b.style.alignSelf = "flex-start";
+      b.addEventListener("click", async () => { try { await navigator.clipboard.writeText(node.leafRow.c); b.textContent = "Código copiado"; } catch (_) { b.textContent = node.leafRow.c; } setTimeout(() => { b.textContent = "Copiar código"; }, 1600); });
+      det.appendChild(b);
+    }
+    wrap.appendChild(det); ex.appendChild(wrap); host.appendChild(ex);
+    requestAnimationFrame(() => { wrap.querySelectorAll(".item.sel, .item.trail").forEach(s => s.scrollIntoView({ block: "nearest", inline: "nearest" })); wrap.scrollLeft = wrap.scrollWidth; });
+  }
+
+  // ---------- Precios ----------
+  let prCat = "", prSub = "";
+  const TIERS = [
+    { name: "Económico", rango: "Hasta $10", test: (p) => p <= 10, color: "var(--tier1)" },
+    { name: "Medio", rango: "$10 a $40", test: (p) => p > 10 && p <= 40, color: "var(--tier2)" },
+    { name: "Premium", rango: "Más de $40", test: (p) => p > 40, color: "var(--tier3)" }
+  ];
+  function renderPrecios() {
+    const host = $("v-precios");
+    if (!state.rows.length) return emptyState(host);
+    host.replaceChildren();
+    if (!state.has.pr) { const b = el("div", "empty"); b.append(el("h3", null, "El archivo no trae precios"), el("p", null, "Agrega una columna «precio» al Excel y vuelve a cargarlo en «Datos a ingresar».")); host.appendChild(b); return; }
+    if (prCat && !tree.kids.has(prCat)) { prCat = ""; prSub = ""; }
+    const catNode = prCat ? tree.kids.get(prCat) : null;
+    const hasSubs = catNode && [...catNode.kids.values()].some(k => k.kids.size);
+    if (prSub && !(catNode && catNode.kids.has(prSub))) prSub = "";
+
+    const bar = el("div", "org-bar");
+    const sc = el("select"); sc.id = "prCat"; sc.setAttribute("aria-label", "Filtrar por " + levelName(0).toLowerCase());
+    const o0 = el("option", null, "Todas las " + plural(0).toLowerCase()); o0.value = ""; sc.appendChild(o0);
+    [...tree.kids.values()].sort((a, b) => b.count - a.count || byName(a, b)).forEach(c => { const o = el("option", null, c.name + " (" + fN(c.count) + ")"); o.value = c.name; sc.appendChild(o); });
+    sc.value = prCat;
+    sc.addEventListener("change", () => { prCat = sc.value; prSub = ""; renderPrecios(); });
+    bar.appendChild(sc);
+    if (hasSubs) {
+      const ss = el("select"); ss.id = "prSub"; ss.setAttribute("aria-label", "Filtrar por " + levelName(1).toLowerCase());
+      const s0 = el("option", null, "Todas las " + plural(1).toLowerCase()); s0.value = ""; ss.appendChild(s0);
+      sortedKids(catNode).forEach(c => { const o = el("option", null, c.name + " (" + fN(c.count) + ")"); o.value = c.name; ss.appendChild(o); });
+      ss.value = prSub;
+      ss.addEventListener("change", () => { prSub = ss.value; renderPrecios(); });
+      bar.appendChild(ss);
+    }
+    host.appendChild(bar);
+
+    let rows = rowsF();
+    if (prCat) rows = rows.filter(r => r.p[0] === prCat);
+    if (prSub) rows = rows.filter(r => r.p[1] === prSub);
+    const priced = rows.filter(r => r.pr != null);
+    const sinPrecio = rows.length - priced.length;
+    if (sinPrecio) bar.appendChild(el("span", "hint", fN(sinPrecio) + (sinPrecio === 1 ? " código sin precio no aparece" : " códigos sin precio no aparecen") + " en los rangos."));
+
+    const groupLevel = prSub ? -1 : (prCat ? 1 : 0); // agrupa por subcategoría; si no hay categoría elegida, por categoría
+    const grid = el("div", "tiers");
+    for (const t of TIERS) {
+      const list = priced.filter(r => t.test(r.pr));
+      const card = el("div", "tier");
+      const head = el("div", "tier-head");
+      const h = el("h3"); const dot = el("i"); dot.style.background = t.color; h.append(dot, t.name);
+      const pct = priced.length ? Math.round(list.length / priced.length * 100) : 0;
+      const avg = list.length ? list.reduce((a, r) => a + r.pr, 0) / list.length : 0;
+      head.append(h, el("b", null, fN(list.length)), el("p", null, t.rango + " · " + pct + "% de los SKU" + (list.length ? " · promedio " + fMoney(avg) : "")));
+      card.appendChild(head);
+      const body = el("div", "tier-body");
+      if (!list.length) body.appendChild(el("p", "tier-empty", "Sin productos en este rango."));
+      else {
+        const groups = new Map();
+        for (const r of list) {
+          const g = groupLevel >= 0 ? (r.p[groupLevel] || "Sin " + levelName(groupLevel).toLowerCase()) : "";
+          if (!groups.has(g)) groups.set(g, []);
+          groups.get(g).push(r);
+        }
+        const order = [...groups.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0], "es"));
+        for (const [g, rs] of order) {
+          const box = el("div", "tier-group");
+          if (g) box.appendChild(el("h4", null, g + " · " + fN(rs.length)));
+          rs.sort((a, b) => a.pr - b.pr || a.p[a.p.length - 1].localeCompare(b.p[b.p.length - 1], "es"));
+          for (const r of rs) {
+            const row = el("div", "tier-row");
+            row.append(el("span", "n", r.p[r.p.length - 1]), el("span", "pr", fMoney(r.pr)));
+            const meta = [r.m, r.c].filter(Boolean).join(" · ");
+            if (meta) row.appendChild(el("span", "m", meta));
+            box.appendChild(row);
+          }
+          body.appendChild(box);
+        }
+      }
+      card.appendChild(body);
+      grid.appendChild(card);
+    }
+    host.appendChild(grid);
+  }
+
+  // ---------- Organigrama ----------
+  let orgCat = "";
+  const orgOpen = new Set();
+  const ORG_MAX = 10;
+  function modalidadDe(n) {
+    const c = new Map();
+    for (const r of n.rows) if (r.md) c.set(r.md, (c.get(r.md) || 0) + 1);
+    let best = "", bn = 0; for (const [k, v] of c) if (v > bn) { best = k; bn = v; }
+    return best;
+  }
+  function modalidades() {
+    const set = new Map();
+    for (const r of state.rows) if (r.md && !set.has(r.md)) set.set(r.md, 0);
+    const list = [...set.keys()];
+    const map = new Map(); let next = 3;
+    for (const v of list) {
+      const n = norm(v);
+      if (/asistid/.test(n)) map.set(v, 2);
+      else if (/autoservicio|apoyo/.test(n)) map.set(v, 1);
+    }
+    for (const v of list) if (!map.has(v)) { map.set(v, next); next = next >= 4 ? 3 : next + 1; }
+    return map;
+  }
+  function renderOrganigrama() {
+    const host = $("v-organigrama");
+    if (!state.rows.length) return emptyState(host);
+    host.replaceChildren();
+    const cats = [...tree.kids.values()].sort((a, b) => b.count - a.count || byName(a, b));
+    if (!tree.kids.has(orgCat)) orgCat = cats[0] ? cats[0].name : "";
+    const root = tree.kids.get(orgCat);
+    const mods = modalidades();
+
+    const bar = el("div", "org-bar");
+    const sel = el("select"); sel.id = "orgCat"; sel.setAttribute("aria-label", "Elegir " + levelName(0).toLowerCase());
+    cats.forEach(c => { const o = el("option", null, c.name + " (" + fN(c.count) + ")"); o.value = c.name; sel.appendChild(o); });
+    sel.value = orgCat;
+    sel.addEventListener("change", () => { orgCat = sel.value; renderOrganigrama(); });
+    bar.appendChild(sel);
+    if (mods.size) {
+      const lg = el("div", "legend");
+      for (const [v, i] of mods) { const s = el("span"); const sw = el("i"); sw.style.background = "var(--mod" + i + "-bg)"; s.append(sw, v); lg.appendChild(s); }
+      bar.appendChild(lg);
+    } else {
+      bar.appendChild(el("span", "hint", "Agrega una columna «modalidad» al Excel para colorear las " + plural(1).toLowerCase() + " (por ejemplo, Autoservicio con apoyo o Venta asistida)."));
+    }
+    host.appendChild(bar);
+
+    const sc = el("div", "org-scroll");
+    const org = el("div", "org");
+    org.appendChild(box(root, "root", org));
+    if (root.kids.size) org.appendChild(kidsOf(root, mods));
+    sc.appendChild(org);
+    host.appendChild(sc);
+    requestAnimationFrame(() => { sc.scrollLeft = Math.max(0, (sc.scrollWidth - sc.clientWidth) / 2); });
+  }
+  function resumen(n) {
+    const parts = [];
+    const sub = (x) => [...x.kids.values()].some(k => k.kids.size);
+    if (n.kids.size && sub(n)) parts.push(fN(n.kids.size) + " " + plural(n.depth).toLowerCase());
+    parts.push(fN(n.count) + " SKU");
+    return parts.join(" · ");
+  }
+  function box(n, kind, target) {
+    const b = el("div", "onode " + kind);
+    b.append(el("div", "t", n.name), el("div", "s", resumen(n)));
+    if (downloads) {
+      const pdf = el("button", null, "Guardar PDF"); pdf.type = "button";
+      pdf.addEventListener("click", () => guardarPDF(kind === "root" ? target : b.parentElement, n.name, pdf));
+      b.appendChild(pdf);
+    }
+    return b;
+  }
+  function kidsOf(n, mods) {
+    const k = el("div", "okids");
+    for (const c of sortedKids(n)) {
+      const br = el("div", "obranch");
+      const deeper = [...c.kids.values()].some(g => g.kids.size);
+      if (c.kids.size && deeper) { br.appendChild(box(c, "group")); br.appendChild(kidsOf(c, mods)); }
+      else if (c.kids.size) br.appendChild(column(c, mods));
+      else br.appendChild(leafCard(c, null));
+      k.appendChild(br);
+    }
+    return k;
+  }
+  function column(n, mods) {
+    const col = el("div", "ocol");
+    const md = modalidadDe(n);
+    const ix = md ? mods.get(md) : 0;
+    const head = el("div", "ohead");
+    if (ix) { head.style.background = "var(--mod" + ix + "-bg)"; head.style.color = "var(--mod" + ix + "-fg)"; }
+    const s = el("div", "s", fN(n.count) + " SKU" + (md ? " · " + md : ""));
+    if (ix) { s.style.color = "inherit"; s.style.opacity = ".85"; }
+    head.append(el("div", "t", n.name), s);
+    col.appendChild(head);
+    const cards = el("div", "ocards");
+    const key = pathOf(n).map(x => x.name).join("›");
+    const leaves = sortedKids(n);
+    const open = orgOpen.has(key);
+    (open ? leaves : leaves.slice(0, ORG_MAX)).forEach(l => cards.appendChild(leafCard(l, ix)));
+    if (leaves.length > ORG_MAX) {
+      const more = el("div", "ocard more", open ? "Ver menos" : "+" + fN(leaves.length - ORG_MAX) + " más");
+      more.tabIndex = 0; more.setAttribute("role", "button");
+      const toggle = () => { open ? orgOpen.delete(key) : orgOpen.add(key); const nc = column(n, mods); col.replaceWith(nc); };
+      more.addEventListener("click", toggle);
+      more.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+      cards.appendChild(more);
+    }
+    col.appendChild(cards);
+    return col;
+  }
+  function leafCard(n, ix) {
+    const c = el("div", "ocard");
+    if (ix) c.style.borderTopColor = "var(--mod" + ix + "-bg)";
+    c.appendChild(el("div", null, n.name));
+    const r = n.leafRow || (n.rows && n.rows[0]);
+    if (r && r.m) c.appendChild(el("div", "m", r.m));
+    return c;
+  }
+  function loadScript(src) {
+    return new Promise((ok, bad) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => bad(new Error("No se pudo cargar " + src)); document.head.appendChild(s); });
+  }
+  async function guardarPDF(node, name, btn) {
+    const txt = btn.textContent; btn.disabled = true; btn.textContent = "Generando…";
+    try {
+      if (!window.html2canvas) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+      if (!window.jspdf) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      const bg = getComputedStyle(document.body).backgroundColor;
+      const w = node.scrollWidth, h = node.scrollHeight;
+      const scale = Math.min(2, 14000 / Math.max(w, h));
+      const canvas = await window.html2canvas(node, { backgroundColor: bg, scale, width: w, height: h, windowWidth: Math.max(w + 40, document.documentElement.clientWidth), ignoreElements: (e) => e.tagName === "BUTTON" });
+      const pdf = new window.jspdf.jsPDF({ orientation: w >= h ? "landscape" : "portrait", unit: "px", format: [w + 40, h + 40], hotfixes: ["px_scaling"] });
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 20, 20, w, h);
+      const fname = "organigrama-" + norm(name).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".pdf";
+      await downloads.save({ filename: fname, data: pdf.output("arraybuffer") });
+    } catch (e) {
+      if (!(e && e.code === "declined")) alertMsg("No se pudo generar el PDF. Inténtalo de nuevo.");
+    } finally { btn.disabled = false; btn.textContent = txt; }
+  }
+  function alertMsg(t) { const host = $("v-organigrama"); const m = el("p", "msg err", t); host.prepend(m); setTimeout(() => m.remove(), 5000); }
+
+  // ---------- refresh ----------
+  function refresh() { tree = buildTree(rowsF()); renderTop(); renderView(); }
+  function apply(next) {
+    state = next;
+    if (brand && !state.rows.some(r => (r.m || "Sin marca") === brand)) brand = "";
+    refresh();
+  }
+
+  // ---------- import ----------
+  function showMsg(kind, text) { const m = $("loadMsg"); m.className = "msg " + kind; m.textContent = text; m.hidden = !text; }
+  function guessRole(h, values) {
+    const n = norm(h);
+    if (/sku|codigo|^cod\b|^cod\.|clave|referencia/.test(n)) return "c";
+    if (/marca|proveedor/.test(n)) return "m";
+    if (/modalidad|atencion|tipo de venta|tipo_venta|servicio/.test(n)) return "md";
+    if (/inventario|existencia|stock|^inv\b|disponible/.test(n)) return "inv";
+    if (/venta|vta/.test(n)) return "vta";
+    if (/costo/.test(n)) return "cost";
+    if (/precio|pvp|mayoreo/.test(n)) return "pr";
+    const filled = values.filter(v => v !== "");
+    if (filled.length && filled.filter(v => num(v) != null).length / filled.length > 0.8) return "dat";
+    return "lvl";
+  }
+  async function readFile(file) {
+    showMsg("", "");
+    if (typeof XLSX === "undefined") { showMsg("err", "No se pudo cargar el lector de Excel. Recarga la página e inténtalo de nuevo."); return; }
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = /\.(csv|txt)$/i.test(file.name) ? XLSX.read(new TextDecoder("utf-8").decode(buf), { type: "string", raw: true }) : XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const grid = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "", blankrows: false })
+        .map(r => r.map(c => (typeof c === "number" ? String(Math.round(c * 1e6) / 1e6) : String(c ?? "").trim())));
+      if (grid.length < 2) { showMsg("err", "El archivo no tiene filas de datos. La primera fila debe tener los nombres de las columnas."); return; }
+      const width = Math.max(...grid.map(r => r.length));
+      const headers = Array.from({ length: width }, (_, i) => grid[0][i] || "Columna " + (i + 1));
+      const body = grid.slice(1).map(r => Array.from({ length: width }, (_, i) => r[i] || ""));
+      const roles = headers.map((h, i) => { const vals = body.slice(0, 300).map(r => r[i]); return vals.some(v => v) ? guessRole(h, vals) : "ign"; });
+      const seen = {};
+      roles.forEach((r, i) => { if (r !== "lvl" && r !== "dat" && r !== "ign") { if (seen[r]) roles[i] = "dat"; seen[r] = 1; } });
+      if (!roles.includes("lvl")) { const i = roles.findIndex(r => r !== "ign"); if (i >= 0) roles[i] = "lvl"; }
+      pending = { filename: file.name, sheet: wb.SheetNames[0], headers, body, roles, fill: true };
+      renderImport();
+    } catch (e) { showMsg("err", "No se pudo leer el archivo. Verifica que sea un Excel o CSV válido. (" + (e.message || e) + ")"); }
+  }
+  function pendingData() {
+    const { headers, body, roles, fill } = pending;
+    const lv = roles.map((r, i) => r === "lvl" ? i : -1).filter(i => i >= 0);
+    const idx = (k) => roles.indexOf(k);
+    const dx = roles.map((r, i) => r === "dat" ? i : -1).filter(i => i >= 0);
+    const rows = [], last = [], has = {};
+    for (const r of body) {
+      let path = lv.map(i => r[i]);
+      if (fill) { const first = path.findIndex(v => v); if (first < 0) continue; path = path.map((v, j) => j < first ? (last[j] || "") : v); }
+      const cut = path.findIndex(v => !v);
+      const p = cut < 0 ? path : path.slice(0, cut);
+      if (!p.length) continue;
+      for (let j = 0; j < path.length; j++) last[j] = j < p.length ? p[j] : "";
+      const row = { p };
+      for (const k of ["c", "m", "md"]) { const i = idx(k); if (i >= 0 && r[i]) { row[k] = r[i]; has[k] = 1; } }
+      for (const k of ["pr", "inv", "cost", "vta"]) { const i = idx(k); if (i >= 0) { const n = num(r[i]); if (n != null) { row[k] = n; has[k] = 1; } } }
+      if (dx.length) { const x = {}; dx.forEach(i => { if (r[i] !== "") x[headers[i]] = r[i]; }); if (Object.keys(x).length) row.x = x; }
+      rows.push(row);
+    }
+    return { rows, levels: lv.map(i => headers[i]), has, extras: dx.map(i => headers[i]) };
+  }
+  function renderImport() {
+    const area = $("importArea"); area.replaceChildren();
+    if (!pending) { area.hidden = true; return; }
+    area.hidden = false; area.style.display = "flex"; area.style.flexDirection = "column"; area.style.gap = "12px";
+    area.appendChild(el("p", "hint", "Archivo: " + pending.filename + " · hoja «" + pending.sheet + "» · " + fN(pending.body.length) + " filas. Revisa qué hace cada columna. Los niveles se arman en el orden de las columnas:"));
+    const grid = el("div", "roles");
+    pending.headers.forEach((h, i) => {
+      const box = el("div", "role");
+      const lab = el("label", null, h); lab.htmlFor = "role" + i;
+      const s = el("select"); s.id = "role" + i;
+      ROLES.forEach(([v, t]) => { const o = el("option", null, t); o.value = v; s.appendChild(o); });
+      s.value = pending.roles[i];
+      s.addEventListener("change", () => {
+        const v = s.value;
+        if (!["lvl", "dat", "ign"].includes(v)) pending.roles = pending.roles.map((r, j) => (r === v && j !== i ? "dat" : r));
+        pending.roles[i] = v; renderImport();
+      });
+      box.append(lab, s); grid.appendChild(box);
+    });
+    area.appendChild(grid);
+    const fl = el("label", "check"); const fcb = el("input"); fcb.type = "checkbox"; fcb.id = "fillDown"; fcb.checked = pending.fill;
+    fcb.addEventListener("change", () => { pending.fill = fcb.checked; renderImport(); });
+    fl.append(fcb, "Rellenar celdas vacías de nivel con el valor de la fila de arriba (Excel con celdas combinadas)");
+    area.appendChild(fl);
+    const pw = el("div", "tablewrap preview"), tbl = el("table"), thr = el("tr");
+    const NAMES = Object.fromEntries(ROLES);
+    pending.headers.forEach((h, i) => { const r = pending.roles[i]; const th = el("th", r === "ign" ? "off" : "", h); if (r !== "ign") th.appendChild(el("span", "tag", NAMES[r].toLowerCase())); thr.appendChild(th); });
+    tbl.appendChild(el("thead")).appendChild(thr);
+    const tb = el("tbody");
+    pending.body.slice(0, 5).forEach(r => { const tr = el("tr"); r.forEach((c, i) => tr.appendChild(el("td", pending.roles[i] === "ign" ? "off" : "", c))); tb.appendChild(tr); });
+    tbl.appendChild(tb); pw.appendChild(tbl); area.appendChild(pw);
+    const d = pendingData(), t = buildTree(d.rows);
+    const found = [d.has.c && "código", d.has.m && "marca", d.has.md && "modalidad", d.has.pr && "precio", d.has.inv && "inventario", d.has.cost && "costo", d.has.vta && "venta"].filter(Boolean);
+    area.appendChild(el("p", "msg info", d.rows.length
+      ? "Resultado: " + d.levels.join(" › ") + " · " + fN(t.kids.size) + " en el primer nivel · " + fN(d.rows.length) + " códigos" + (found.length ? " · con " + found.join(", ") : "")
+      : "Con esta configuración no queda ninguna fila. Marca al menos una columna como «Nivel del árbol»."));
+    const actions = el("div", "row");
+    const save = el("button", "primary", state.rows.length ? "Reemplazar árbol actual" : "Guardar árbol"); save.type = "button"; save.id = "btnSave";
+    save.disabled = !d.rows.length;
+    save.addEventListener("click", () => saveTree(pendingData(), pending.filename, save));
+    const cancel = el("button", null, "Cancelar"); cancel.type = "button"; cancel.addEventListener("click", () => { pending = null; renderImport(); });
+    actions.append(save, cancel); area.appendChild(actions);
+  }
+
+  // ---------- persistence ----------
+  async function saveTree(d, filename, btn) {
+    const version = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const next = { ...d, filename, updatedAt: new Date().toISOString(), version };
+    if (!db) { pending = null; renderImport(); apply(next); showMsg("ok", "Árbol cargado en esta pestaña. No se guardó para otras personas porque el almacenamiento compartido no está disponible aquí."); return; }
+    btn.disabled = true; btn.textContent = "Guardando…";
+    try {
+      const prev = await db.doc("arbol/meta").get();
+      const prevChunks = prev.exists ? (prev.data().chunks || 0) : 0;
+      const n = Math.ceil(d.rows.length / CHUNK);
+      for (let i = 0; i < n; i++) {
+        btn.textContent = "Guardando " + (i + 1) + " de " + n + "…";
+        await db.doc("arbol_partes/p" + i).set({ version, i, rows: d.rows.slice(i * CHUNK, (i + 1) * CHUNK) });
+      }
+      await db.doc("arbol/meta").set({ version, chunks: n, levels: d.levels, has: d.has, extras: d.extras, filename, updatedAt: next.updatedAt, rows: d.rows.length });
+      for (let i = n; i < prevChunks; i++) { try { await db.doc("arbol_partes/p" + i).delete(); } catch (_) {} }
+      pending = null; renderImport(); apply(next);
+      showMsg("ok", "Árbol guardado: " + fN(d.rows.length) + " códigos. Quedó guardado en este navegador. Para que otros lo vean, exporta el Excel o actualiza arbol.json en el repositorio.");
+    } catch (e) {
+      btn.disabled = false; btn.textContent = "Reintentar guardado";
+      const c = e && e.code;
+      showMsg("err", c === "quota_exceeded" ? "El archivo es demasiado grande para el almacenamiento de esta página. Quita columnas de «Otro dato» o divide el archivo."
+        : (c === "not_granted" || c === "invalid_argument") ? "No tienes permiso para modificar este árbol. Pide acceso de edición a quien lo comparte."
+        : "No se pudo guardar el árbol. Inténtalo de nuevo en unos segundos.");
+    }
+  }
+  async function loadFromMeta(meta) {
+    if (!meta) { if (state.version) apply(EMPTY); else refresh(); return; }
+    if (meta.version === state.version) return;
+    try {
+      const parts = await Promise.all(Array.from({ length: meta.chunks }, (_, i) => db.doc("arbol_partes/p" + i).get()));
+      const rows = [];
+      for (const p of parts) {
+        const d = p.exists ? p.data() : null;
+        if (!d || d.version !== meta.version) return;
+        for (const r of d.rows) if (Array.isArray(r.p) && r.p.length) rows.push(r);
+      }
+      apply({ rows, levels: meta.levels || [], has: meta.has || {}, extras: meta.extras || [], filename: meta.filename, updatedAt: meta.updatedAt, version: meta.version });
+    } catch (e) { $("banner").textContent = "No se pudo leer el árbol guardado. Recarga la página."; }
+  }
+  async function clearTree(btn) {
+    if (!db) { $("confirmBox").hidden = true; apply(EMPTY); return; }
+    btn.disabled = true; btn.textContent = "Vaciando…";
+    try {
+      const prev = await db.doc("arbol/meta").get();
+      const n = prev.exists ? (prev.data().chunks || 0) : 0;
+      await db.doc("arbol/meta").delete();
+      for (let i = 0; i < n; i++) { try { await db.doc("arbol_partes/p" + i).delete(); } catch (_) {} }
+      $("confirmBox").hidden = true; apply(EMPTY); showMsg("ok", "Árbol vaciado.");
+    } catch (e) { btn.disabled = false; btn.textContent = "Sí, vaciar"; showMsg("err", "No se pudo vaciar el árbol. Verifica que tengas permiso de edición."); }
+  }
+
+  // ---------- downloads ----------
+  async function saveXlsx(filename, aoa) {
+    if (!downloads || typeof XLSX === "undefined") { showMsg("err", "La descarga de archivos no está disponible en esta vista."); return; }
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "Categorias");
+    const data = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    try { await downloads.save({ filename, data: new Uint8Array(data) }); }
+    catch (e) { if (e && e.code !== "declined") showMsg("err", "No se pudo descargar el archivo (" + (e.code || "error") + ")."); }
+  }
+
+  // ---------- events ----------
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setView(t.dataset.v, true)));
+  const drop = $("drop"), file = $("file");
+  drop.addEventListener("click", () => file.click());
+  drop.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); file.click(); } });
+  file.addEventListener("change", () => { if (file.files[0]) readFile(file.files[0]); file.value = ""; });
+  ["dragenter", "dragover"].forEach(t => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(t => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+  $("btnClear").addEventListener("click", () => {
+    const box = $("confirmBox"); box.replaceChildren(); box.hidden = false;
+    const c = el("div", "confirm");
+    c.appendChild(el("span", null, "¿Vaciar el árbol? Se borrarán los " + fN(state.rows.length) + " códigos en este navegador."));
+    const yes = el("button", "danger solid", "Sí, vaciar"); yes.type = "button"; yes.addEventListener("click", () => clearTree(yes));
+    const no = el("button", null, "Cancelar"); no.type = "button"; no.addEventListener("click", () => { box.hidden = true; });
+    c.append(yes, no); box.appendChild(c);
+  });
+  $("btnTemplate").addEventListener("click", () => saveXlsx("plantilla-arbol-categorias.xlsx", TEMPLATE));
+  $("btnExport").addEventListener("click", () => {
+    const depth = Math.max(...state.rows.map(r => r.p.length));
+    const head = Array.from({ length: depth }, (_, i) => state.levels[i] || "Nivel " + (i + 1));
+    const F = [["c", "codigo"], ["m", "marca"], ["md", "modalidad"], ["pr", "precio"], ["inv", "inventario"], ["cost", "costo"], ["vta", "venta_mes"]].filter(([k]) => state.has[k]);
+    head.push(...F.map(f => f[1]), ...state.extras);
+    const body = state.rows.map(r => [...Array.from({ length: depth }, (_, i) => r.p[i] || ""), ...F.map(([k]) => r[k] ?? ""), ...state.extras.map(x => (r.x && r.x[x]) || "")]);
+    saveXlsx("arbol-categorias.xlsx", [head, ...body]);
+  });
+
+  // ---------- start ----------
+  const h = (location.hash || "").slice(1);
+  setView(["productos", "categorias", "precios", "organigrama", "estructura", "datos"].includes(h) ? h : "categorias", false);
+  refresh();
+  $("banner").textContent = "Conectando…";
+  (async () => {
+    if (!window.claude || !window.claude.use) { refresh(); $("btnTemplate").hidden = true; return; }
+    const [d, dl] = await Promise.all([window.claude.use("db"), window.claude.use("downloads")]);
+    db = d; downloads = dl;
+    if (!downloads) $("btnTemplate").hidden = true;
+    if (!db) { refresh(); return; }
+    db.doc("arbol/meta").onSnapshot(
+      (snap) => loadFromMeta(snap.exists ? snap.data() : null),
+      () => { $("banner").textContent = "Se perdió la conexión con el árbol guardado. Recarga la página."; }
+    );
+  })();
+})();
+</script>
+
+</body>
+</html>
