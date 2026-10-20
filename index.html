@@ -29,8 +29,8 @@
   --tier1: #f6c9a8; --tier2: #f39a5f; --tier3: #e8590c;
   --mod1-bg: #fdc8a8; --mod1-fg: #1b1f24;
   --mod2-bg: #1f2328; --mod2-fg: #ffffff;
-  --mod3-bg: #cfe0f6; --mod3-fg: #0f1b2d;
-  --mod4-bg: #cfe9d4; --mod4-fg: #0f1b2d;
+  --mod3-bg: #0d3b9e; --mod3-fg: #ffffff;
+  --mod4-bg: #ff5a00; --mod4-fg: #ffffff;
   --font-display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
   --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -40,14 +40,14 @@
     --bg: #0e131a; --surface: #151c25; --surface-2: #1b2430; --fg: #e7ecf2; --muted: #98a3b2; --line: #2a3442;
     --navy: #2f62ad; --on-navy: #ffffff; --blue: #6aa6f0; --blue-soft: #172a44; --blue-line: #284a77;
     --green: #6cc28a; --green-soft: #1b3324; --orange: #e3a052; --danger: #f28b82; --danger-soft: #3d2220; color-scheme: dark;
-    --mod1-bg: #7a4524; --mod1-fg: #fde7d6; --mod2-bg: #e7ecf2; --mod2-fg: #0e131a; --mod3-bg: #284a77; --mod3-fg: #e7ecf2; --mod4-bg: #2a5a38; --mod4-fg: #e7ecf2;
+    --mod1-bg: #7a4524; --mod1-fg: #fde7d6; --mod2-bg: #2e343c; --mod2-fg: #ffffff; --mod3-bg: #2f5fd0; --mod3-fg: #ffffff; --mod4-bg: #e85a12; --mod4-fg: #ffffff;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0e131a; --surface: #151c25; --surface-2: #1b2430; --fg: #e7ecf2; --muted: #98a3b2; --line: #2a3442;
   --navy: #2f62ad; --on-navy: #ffffff; --blue: #6aa6f0; --blue-soft: #172a44; --blue-line: #284a77;
   --green: #6cc28a; --green-soft: #1b3324; --orange: #e3a052; --danger: #f28b82; --danger-soft: #3d2220; color-scheme: dark;
-    --mod1-bg: #7a4524; --mod1-fg: #fde7d6; --mod2-bg: #e7ecf2; --mod2-fg: #0e131a; --mod3-bg: #284a77; --mod3-fg: #e7ecf2; --mod4-bg: #2a5a38; --mod4-fg: #e7ecf2;
+    --mod1-bg: #7a4524; --mod1-fg: #fde7d6; --mod2-bg: #2e343c; --mod2-fg: #ffffff; --mod3-bg: #2f5fd0; --mod3-fg: #ffffff; --mod4-bg: #e85a12; --mod4-fg: #ffffff;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
@@ -231,6 +231,25 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
 .tier-row .m { grid-column: 1 / -1; color: var(--muted); font-size: 0.84rem; }
 .tier-empty { color: var(--muted); text-align: center; padding: 32px 10px; margin: 0; }
 
+/* exhibición */
+.ex-head h2 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; margin: 0; }
+.ex-head p { color: var(--muted); max-width: 70ch; margin: 6px 0 0; }
+.matrix { display: grid; grid-template-columns: 28px 1fr 1fr; grid-template-rows: auto auto auto; gap: 12px; margin-top: 16px; }
+.axis-y { grid-row: 1 / 3; grid-column: 1; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; font-weight: 700; color: var(--mod4-bg); font-size: 0.92rem; }
+.axis-x { grid-column: 2 / 4; text-align: center; font-weight: 700; color: var(--mod4-bg); font-size: 0.92rem; }
+.quad { all: unset; box-sizing: border-box; cursor: pointer; border-radius: 6px; padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; min-height: 160px; min-width: 0; border: 2px solid transparent; }
+.quad:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.quad.on { border-color: var(--fg); box-shadow: 0 0 0 2px var(--surface) inset; }
+.quad h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; text-transform: uppercase; letter-spacing: .01em; }
+.quad .cnt { font-weight: 700; font-size: 0.95rem; }
+.quad .d { font-size: 1.02rem; }
+.quad .l { font-size: 0.86rem; opacity: .9; overflow-wrap: anywhere; }
+.quad .badge { align-self: flex-start; background: #ffffff; color: #1b1f24; font-weight: 800; font-size: 0.72rem; letter-spacing: .08em; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; }
+.ex-list { margin-top: 20px; }
+.ex-list h3 { font-family: var(--font-display); font-size: 1.3rem; margin: 0 0 10px; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+@media (max-width: 680px) { .matrix { grid-template-columns: 22px 1fr; } .matrix .quad { grid-column: 2; } .axis-y { grid-row: 1 / 5; } .axis-x { grid-column: 2; } }
+
 /* organigrama */
 .org-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: var(--muted); }
@@ -334,6 +353,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
     <button class="tab" role="tab" id="t-productos" data-v="productos" type="button">Productos</button>
     <button class="tab" role="tab" id="t-categorias" data-v="categorias" type="button">Categorías y árbol</button>
     <button class="tab" role="tab" id="t-precios" data-v="precios" type="button">Precios</button>
+    <button class="tab" role="tab" id="t-exhibicion" data-v="exhibicion" type="button">Exhibición</button>
     <button class="tab" role="tab" id="t-organigrama" data-v="organigrama" type="button">Organigrama</button>
     <button class="tab" role="tab" id="t-estructura" data-v="estructura" type="button">Estructura</button>
     <button class="tab" role="tab" id="t-datos" data-v="datos" type="button">Datos a ingresar</button>
@@ -342,6 +362,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
   <section id="v-productos" role="tabpanel" hidden></section>
   <section id="v-categorias" role="tabpanel" hidden></section>
   <section id="v-precios" role="tabpanel" hidden></section>
+  <section id="v-exhibicion" role="tabpanel" hidden></section>
   <section id="v-organigrama" role="tabpanel" hidden></section>
   <section id="v-estructura" role="tabpanel" hidden></section>
   <section id="v-datos" role="tabpanel" hidden>
@@ -505,7 +526,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
   function setView(v, push) {
     view = v;
     document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.v === v)));
-    ["productos", "categorias", "precios", "organigrama", "estructura", "datos"].forEach(x => { $("v-" + x).hidden = x !== v; });
+    ["productos", "categorias", "precios", "exhibicion", "organigrama", "estructura", "datos"].forEach(x => { $("v-" + x).hidden = x !== v; });
     if (push) { try { history.replaceState(null, "", "#" + v); } catch (_) {} }
     renderView();
   }
@@ -513,6 +534,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
     if (view === "productos") renderProductos();
     else if (view === "categorias") renderCategorias();
     else if (view === "precios") renderPrecios();
+    else if (view === "exhibicion") renderExhibicion();
     else if (view === "organigrama") renderOrganigrama();
     else if (view === "estructura") renderEstructura();
   }
@@ -593,6 +615,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
     if (state.has.c) cols.push({ key: "c", label: "Código", cls: "code", get: r => r.c || "" });
     cols.push({ key: "name", label: levelName(Math.max(0, (state.levels.length || 1) - 1)), get: r => r.p[r.p.length - 1], path: withPath });
     if (state.has.m) cols.push({ key: "m", label: "Marca", get: r => r.m || "" });
+    if (state.has.md) cols.push({ key: "md", label: "Exhibición", get: r => QUADS[quadIx(r.md)].name, quad: true });
     if (state.has.pr) cols.push({ key: "pr", label: "Precio", num: true, get: r => r.pr, fmt: v => v == null ? "—" : fMoney(v) });
     if (state.has.inv) cols.push({ key: "inv", label: "Inv. unds", num: true, get: r => r.inv, fmt: v => v == null ? "—" : fN(v) });
     if (state.has.inv) cols.push({ key: "val", label: "Valorado", num: true, get: r => valOf(r), fmt: v => fShort(v) });
@@ -606,6 +629,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
       const v = c.get(r);
       const td = el("td", (c.num ? "num" : "") + (c.cls ? " " + c.cls : ""));
       if (c.key === "name" && q) markText(td, String(v), q); else td.textContent = c.fmt ? c.fmt(v) : (v ?? "");
+      if (c.quad) { const d = el("span", "dot"); d.style.background = "var(--mod" + quadIx(r.md) + "-bg)"; td.prepend(d); }
       if (c.key === "c" && q) { td.textContent = ""; markText(td, String(v), q); }
       if (c.path) td.appendChild(el("span", "path", r.p.slice(0, -1).join(" › ")));
       tr.appendChild(td);
@@ -889,6 +913,72 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
     host.appendChild(grid);
   }
 
+  // ---------- Exhibición ----------
+  let exSel = 0;
+  function subNodes() {
+    const lvl = state.levels.length > 2 ? 2 : 1;
+    const out = [];
+    (function w(n) { for (const k of n.kids.values()) { if (k.depth === lvl && k.kids.size) out.push(k); else if (k.depth < lvl) w(k); } })(tree);
+    return out;
+  }
+  function renderExhibicion() {
+    const host = $("v-exhibicion");
+    if (!state.rows.length) return emptyState(host);
+    host.replaceChildren();
+    const subName = plural(state.levels.length > 2 ? 1 : 0).toLowerCase();
+    const head = el("div", "ex-head");
+    head.append(el("h2", null, "Tipo de exhibición por " + levelName(state.levels.length > 2 ? 1 : 0).toLowerCase()),
+      el("p", null, "Cada " + levelName(state.levels.length > 2 ? 1 : 0).toLowerCase() + " se ubica según su complejidad técnica y su valor unitario o riesgo de merma. El tipo sale de la columna «modalidad» del Excel y colorea el organigrama y la lista de productos."));
+    host.appendChild(head);
+    if (!state.has.md) host.appendChild(el("p", "msg info", "Tu Excel no trae la columna «modalidad», así que todas las " + subName + " cuentan como Autoservicio. Agrega esa columna con Autoservicio, Autoservicio con apoyo, Exhibición controlada o Venta asistida y vuelve a cargarlo en «Datos a ingresar»."));
+    const subs = subNodes();
+    const by = { 1: [], 2: [], 3: [], 4: [] };
+    subs.forEach(n => by[quadOfNode(n)].push(n));
+    const m = el("div", "matrix");
+    m.appendChild(el("div", "axis-y", "↑ Valor unitario y riesgo de merma"));
+    for (const k of [3, 2, 4, 1]) {
+      const q = QUADS[k], list = by[k].sort((a, b) => b.count - a.count || byName(a, b));
+      const sku = list.reduce((a, n) => a + n.count, 0);
+      const b = el("button", "quad" + (exSel === k ? " on" : "")); b.type = "button";
+      b.style.background = "var(--mod" + k + "-bg)"; b.style.color = "var(--mod" + k + "-fg)";
+      b.setAttribute("aria-pressed", String(exSel === k));
+      b.appendChild(el("h3", null, q.name));
+      if (q.start) b.appendChild(el("span", "badge", "Empiece aquí"));
+      b.append(el("span", "cnt", fN(list.length) + " " + subName + " · " + fN(sku) + " SKU"), el("span", "d", q.desc));
+      const names = list.slice(0, 4).map(n => n.name).join(", ") + (list.length > 4 ? " y " + fN(list.length - 4) + " más" : "");
+      b.appendChild(el("span", "l", names || "Sin " + subName + " en este tipo."));
+      b.addEventListener("click", () => { exSel = exSel === k ? 0 : k; renderExhibicion(); });
+      m.appendChild(b);
+    }
+    m.appendChild(el("div"));
+    m.appendChild(el("div", "axis-x", "Complejidad técnica de la categoría →"));
+    host.appendChild(m);
+
+    if (exSel) {
+      const q = QUADS[exSel], list = by[exSel];
+      const box = el("div", "ex-list");
+      const h = el("h3"); const d = el("span", "dot"); d.style.background = "var(--mod" + exSel + "-bg)"; h.append(d, q.name + " · " + fN(list.length) + " " + subName);
+      box.appendChild(h);
+      if (!list.length) box.appendChild(el("p", "hint", "Ninguna " + levelName(state.levels.length > 2 ? 1 : 0).toLowerCase() + " está en este tipo."));
+      else {
+        const w = el("div", "tablewrap"), t = el("table"), tr = el("tr");
+        const cols = [levelName(state.levels.length > 2 ? 1 : 0), "Ruta", "SKU"]; if (state.has.pr) cols.push("Precio prom."); cols.push("Modalidad en el Excel");
+        cols.forEach((c, i) => tr.appendChild(el("th", (i === 2 || c === "Precio prom.") ? "num" : "", c)));
+        t.appendChild(el("thead")).appendChild(tr);
+        const tb = el("tbody");
+        list.forEach(n => {
+          const r = el("tr");
+          r.append(el("td", null, n.name), el("td", "muted", pathOf(n).slice(0, -1).map(x => x.name).join(" › ")), el("td", "num", fN(n.count)));
+          if (state.has.pr) r.appendChild(el("td", "num", n.prN ? fMoney(n.prS / n.prN) : "—"));
+          r.appendChild(el("td", null, modalidadDe(n) || "Sin modalidad (cuenta como Autoservicio)"));
+          tb.appendChild(r);
+        });
+        t.appendChild(tb); w.appendChild(t); box.appendChild(w);
+      }
+      host.appendChild(box);
+    }
+  }
+
   // ---------- Organigrama ----------
   let orgCat = "";
   const orgOpen = new Set();
@@ -899,17 +989,25 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
     let best = "", bn = 0; for (const [k, v] of c) if (v > bn) { best = k; bn = v; }
     return best;
   }
+  // Cuadrantes de exhibición: 1 = Autoservicio con apoyo, 2 = Venta asistida, 3 = Exhibición controlada, 4 = Autoservicio
+  const QUADS = {
+    3: { name: "Exhibición controlada", desc: "Vitrina o candado, con el producto a la vista.", pos: "tl" },
+    2: { name: "Venta asistida", desc: "El vendedor diagnostica y cierra la venta.", pos: "tr" },
+    4: { name: "Autoservicio", desc: "La exhibición y el precio hacen la venta.", pos: "bl", start: true },
+    1: { name: "Autoservicio con apoyo", desc: "POP que explica y asesor de pasillo.", pos: "br" }
+  };
+  function quadIx(text) {
+    const n = norm(text);
+    if (!n) return 4;
+    if (/asistid/.test(n)) return 2;
+    if (/controlad|vitrina|candado/.test(n)) return 3;
+    if (/apoyo/.test(n)) return 1;
+    return 4;
+  }
+  function quadOfNode(n) { return quadIx(modalidadDe(n)); }
   function modalidades() {
-    const set = new Map();
-    for (const r of state.rows) if (r.md && !set.has(r.md)) set.set(r.md, 0);
-    const list = [...set.keys()];
-    const map = new Map(); let next = 3;
-    for (const v of list) {
-      const n = norm(v);
-      if (/asistid/.test(n)) map.set(v, 2);
-      else if (/autoservicio|apoyo/.test(n)) map.set(v, 1);
-    }
-    for (const v of list) if (!map.has(v)) { map.set(v, next); next = next >= 4 ? 3 : next + 1; }
+    const map = new Map();
+    if (state.has.md) for (const k of [3, 2, 4, 1]) map.set(QUADS[k].name, k);
     return map;
   }
   function renderOrganigrama() {
@@ -932,7 +1030,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
       for (const [v, i] of mods) { const s = el("span"); const sw = el("i"); sw.style.background = "var(--mod" + i + "-bg)"; s.append(sw, v); lg.appendChild(s); }
       bar.appendChild(lg);
     } else {
-      bar.appendChild(el("span", "hint", "Agrega una columna «modalidad» al Excel para colorear las " + plural(1).toLowerCase() + " (por ejemplo, Autoservicio con apoyo o Venta asistida)."));
+      bar.appendChild(el("span", "hint", "Agrega una columna «modalidad» al Excel para colorear las " + plural(1).toLowerCase() + " por tipo de exhibición."));
     }
     host.appendChild(bar);
 
@@ -975,8 +1073,8 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
   }
   function column(n, mods) {
     const col = el("div", "ocol");
-    const md = modalidadDe(n);
-    const ix = md ? mods.get(md) : 0;
+    const ix = state.has.md ? quadOfNode(n) : 0;
+    const md = ix ? QUADS[ix].name : "";
     const head = el("div", "ohead");
     if (ix) { head.style.background = "var(--mod" + ix + "-bg)"; head.style.color = "var(--mod" + ix + "-fg)"; }
     const s = el("div", "s", fN(n.count) + " SKU" + (md ? " · " + md : ""));
@@ -1229,7 +1327,7 @@ tr.grp td { background: var(--blue-soft); font-weight: 700; font-size: 0.85rem; 
 
   // ---------- start ----------
   const h = (location.hash || "").slice(1);
-  setView(["productos", "categorias", "precios", "organigrama", "estructura", "datos"].includes(h) ? h : "categorias", false);
+  setView(["productos", "categorias", "precios", "exhibicion", "organigrama", "estructura", "datos"].includes(h) ? h : "categorias", false);
   refresh();
   $("banner").textContent = "Conectando…";
   (async () => {
