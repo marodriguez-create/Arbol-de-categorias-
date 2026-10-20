@@ -4,11 +4,9 @@ Los datos salen directamente del Excel que está en el repositorio (Libro1.xlsx)
 Para actualizar la página para todos, reemplaza ese Excel en GitHub.
 Ejecutar en local:  streamlit run streamlit_app.py
 """
-import io
 import json
 from pathlib import Path
 
-import openpyxl
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -52,25 +50,6 @@ def leer_html(ruta: str, mtime: float):
     return Path(ruta).read_text(encoding="utf-8")
 
 
-def a_excel(datos) -> bytes:
-    """Arma un .xlsx con las mismas columnas que entiende la página."""
-    meta = datos["meta"]
-    rows = [r for p in datos["partes"].values() for r in p["rows"]]
-    depth = max((len(r["p"]) for r in rows), default=0)
-    niveles = [meta["levels"][i] if i < len(meta["levels"]) else f"nivel_{i + 1}" for i in range(depth)]
-    campos = [k for k in ("c", "m", "md", "pr", "inv", "cost", "vta") if meta.get("has", {}).get(k)]
-    nombres = {"c": "sku", "m": "marca", "md": "modalidad", "pr": "precio", "inv": "inventario", "cost": "costo", "vta": "venta_mes"}
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Categorias"
-    ws.append(niveles + [nombres[k] for k in campos])
-    for r in rows:
-        ws.append([r["p"][i] if i < len(r["p"]) else "" for i in range(depth)] + [r.get(k, "") for k in campos])
-    buf = io.BytesIO()
-    wb.save(buf)
-    return buf.getvalue()
-
-
 html_path = buscar("index.html")
 if not html_path:
     st.error("No encuentro index.html en el repositorio. Súbelo en la misma carpeta que streamlit_app.py.")
@@ -109,14 +88,7 @@ if datos is None:
     if json_path:
         datos, origen = json.loads(json_path.read_text(encoding="utf-8")), json_path.name
 
-if datos:
-    st.sidebar.download_button(
-        "Descargar Excel",
-        data=a_excel(datos),
-        file_name=f"arbol-categorias-{Path(origen or 'datos').stem}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-else:
+if not datos:
     st.sidebar.warning("No hay ningún Excel en el repositorio. Sube Libro1.xlsx a GitHub.")
 
 # ---------- página ----------
@@ -128,4 +100,7 @@ if "<body>" in html:
 else:
     html = inyectar + html
 
-components.html(html, height=2200, scrolling=True)
+if hasattr(st, "iframe"):
+    st.iframe(html, height="content")  # Streamlit 1.50 o más nuevo: alto automático
+else:
+    components.html(html, height=2200, scrolling=True)
